@@ -1,6 +1,9 @@
 from Individu import Password
+from Population import Population
+import params
 
 if __name__ == "__main__":
-    a = Password()
-    print(a.password)
-    print(a.fitness())
+    pop = Population(Password, params.N)
+    while True:
+        print(pop.nextGen())
+
