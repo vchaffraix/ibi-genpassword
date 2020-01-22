@@ -21,7 +21,8 @@ class Population():
         for i in range(n):
             self.pop.append(self.IND())
         self.fitsum = sum(i.fitness() for i in self.pop)
-        self.best = None
+        self.pop.sort(key=lambda x: x.fitness(), reverse=True)
+        self.best = self.pop[0]
 
     # Tri de la population par fitness et calcul du max
     # def preselect(self):

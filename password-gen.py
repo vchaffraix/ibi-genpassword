@@ -14,9 +14,9 @@ if __name__ == "__main__":
 
     pop = Population(Password, params.N)
     index = 0
-    x_vals = []
-    best_vals = []
-    mean_vals = []
+    x_vals = [index]
+    best_vals = [pop.best.fitness()]
+    mean_vals = [pop.fitsum/params.N]
     stop = False
     def animate(i):
         global stop
