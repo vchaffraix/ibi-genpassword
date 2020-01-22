@@ -2,6 +2,7 @@ from Individu import Individu
 import random
 import params
 import copy
+import time
 
 
 
@@ -20,6 +21,7 @@ class Population():
         for i in range(n):
             self.pop.append(self.IND())
         self.fitsum = sum(i.fitness() for i in self.pop)
+        self.best = None
 
     # Tri de la population par fitness et calcul du max
     # def preselect(self):
@@ -36,8 +38,13 @@ class Population():
         return i
     # Sélection par "tournoi"
     def tournament_pick(self):
-        i1, i2 = random.sample(self.pop, 2)
-        return max(i1, i2, key=lambda x: x.fitness())
+        tn = random.sample(self.pop, params.TOURNAMENT_SIZE)
+        while True:
+            winner = max(tn, key=lambda x:x.fitness())
+            if len(tn)==1 or random.random() < params.TOURNAMENT_P:
+                break
+            tn.remove(winner)
+        return winner 
     # On utilise la fonction de sélection définie dans params
     SELECT_FUNCTIONS = {
         "wheel": wheel_pick,
@@ -51,15 +58,15 @@ class Population():
         desc_pop = []
         # Élitisme
         if(params.e>0):
-            elit = sorted(self.pop, key=lambda x: x.fitness(), reverse=True)[:params.e]
+            elit = self.pop[:params.e]
             max_fit = elit[0].fitness()
         else:
             elit = []
             max_fit = 0
 
-        while n_desc<self.n-params.e:
-            p1 = copy.deepcopy(self.pick())
-            p2 = copy.deepcopy(self.pick())
+        while n_desc<self.n-10:
+            p1 = copy.copy(self.pick())
+            p2 = copy.copy(self.pick())
             tirage = random.random()
             if params.p_cross>=tirage:
                 p1, p2 = p1.cross(p2)
@@ -68,7 +75,13 @@ class Population():
             n_desc += 2
             max_fit = max(max_fit, p1.fitness(), p2.fitness())
             desc_pop.extend((p1, p2))
+        for i in range(10):
+            p = self.IND()
+            max_fit = max(max_fit, p.fitness())
+            desc_pop.append(p)
+            n_desc += 1
         desc_pop.extend(elit)
-        self.pop = desc_pop
+        self.pop = sorted(desc_pop, key=lambda x: x.fitness(), reverse=True)
         self.fitsum = sum(i.fitness() for i in self.pop)
+        self.best = self.pop[0]
         return (max_fit, self.fitsum/n_desc)

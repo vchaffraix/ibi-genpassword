@@ -35,15 +35,50 @@ class Password(Individu):
         for i, c in enumerate(self.password):
             tirage = random.random()
             if p>=tirage:
-                new_pass = self.password[:i] + random.choice(params.CHARS)
-                if i<self.length-1:
+                new_pass = self.password[:i] + random.choice(list(params.CHARS)+[""])
+                if random.random() < 0.5 and self.length<max(params.PASS_LENGTH):
+                    new_pass += self.password[i:]
+                elif i<self.length-1:
                     new_pass += self.password[i+1:]
                 self.password = new_pass
-    # Fonction de cross-over de deux mots de passe
-    def cross(self, p2):
+        self.length = len(self.password)
+
+    def cross_slice(self, p2):
         l1 = self.length
         l2 = p2.length
         breakpoint = random.randrange(min(l1, l2))
         crossed1 = self.password[:breakpoint] + p2.password[breakpoint:]
         crossed2 = p2.password[:breakpoint] + self.password[breakpoint:]
         return (Password(crossed1), Password(crossed2))
+    def cross_merge(self, p2):
+        l1 = self.length
+        l2 = p2.length
+        crossed1 = ""
+        crossed2 = ""
+        for i in range(max(l1,l2)):
+            if i<l1:
+                c1 = self.password[i]
+            else:
+                c1 = ""
+            if i<l2:
+                c2 = p2.password[i]
+            else:
+                c2 = ""
+
+            if random.random() < 0.5:
+                crossed1 += c1
+                crossed2 += c2
+            else:
+                crossed1 += c2
+                crossed2 += c1
+        return (Password(crossed1), Password(crossed2))
+
+
+    # On utilise la fonction de sélection définie dans params
+    CROSS_FUNCTIONS = {
+        "slice": cross_slice,
+        "merge": cross_merge
+    }
+    # Fonction de cross-over de deux mots de passe
+    def cross(self, p2):
+        return self.CROSS_FUNCTIONS[params.CROSS_FUNCTION](self, p2)
