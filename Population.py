@@ -4,8 +4,6 @@ import params
 import copy
 import time
 
-
-
 class Population():
     # IND : classe des individus pour l'instanciation
     # n : nombre d'individus dans une population
@@ -34,12 +32,12 @@ class Population():
         sum_ = 0
         for i in self.pop:
             sum_ += i.fitness()/self.fitsum
-            if sum_ >= tirage:
+            if tirage > sum_:
                 return i
         return i
     # Sélection par "tournoi"
     def tournament_pick(self):
-        tn = random.sample(self.pop, params.TOURNAMENT_SIZE)
+        tn = random.sample(self.pop[params.e//2:], params.TOURNAMENT_SIZE)
         while True:
             winner = max(tn, key=lambda x:x.fitness())
             if len(tn)==1 or random.random() < params.TOURNAMENT_P:
@@ -60,10 +58,11 @@ class Population():
         # Élitisme
         if(params.e>0):
             elit = self.pop[:params.e]
+            n_desc += params.e
         else:
             elit = []
-        self.fitsum = 0
-        while n_desc<self.n-10:
+        fitsum = 0
+        while n_desc<self.n:
             p1 = copy.copy(self.pick())
             p2 = copy.copy(self.pick())
             tirage = random.random()
@@ -73,13 +72,14 @@ class Population():
             p2.mutate(params.p_mut)
             n_desc += 2
             desc_pop.extend((p1, p2))
-            self.fitsum += p1.fitness() + p2.fitness()
-        for i in range(10):
-            p = self.IND()
-            desc_pop.append(p)
-            self.fitsum += p.fitness()
-            n_desc += 1
+            fitsum += p1.fitness() + p2.fitness()
+        # for i in range(10):
+            # p = self.IND()
+            # desc_pop.append(p)
+            # fitsum += p.fitness()
+            # n_desc += 1
         desc_pop.extend(elit)
+        self.fitsum = fitsum + sum(i.fitness() for i in elit)
         self.pop = sorted(desc_pop, key=lambda x: x.fitness(), reverse=True)
         self.best = self.pop[0]
         max_fit = self.best.fitness()
