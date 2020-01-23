@@ -27,9 +27,10 @@ class Password(Individu):
         else:
             self.length = random.choice(params.PASS_LENGTH)
             self.password = "".join(random.choices(params.CHARS, k=self.length))
+        self.fitness_val = check(params.GROUP_ID, self.password)
     # La fitness est donnée par la similarité avec le bon mot de passe
     def fitness(self):
-        return check(params.GROUP_ID, self.password)
+        return self.fitness_val
     # Fonction de mutation d'un mot de passe
     def mutate(self, p):
         for i, c in enumerate(self.password):
@@ -42,6 +43,7 @@ class Password(Individu):
                     new_pass += self.password[i+1:]
                 self.password = new_pass
         self.length = len(self.password)
+        self.fitness_val = check(params.GROUP_ID, self.password)
 
     def cross_slice(self, p2):
         l1 = self.length

@@ -14,7 +14,7 @@ class Population():
         if(issubclass(IND, Individu)):
             self.IND = IND
         else:
-            raise Exception(IND + " : n'est pas un type d'individu.")
+            raise Exception("\"" + IND.__name__ + "\" n'est pas un type d'individu.")
 
         self.n = n
         self.pop = []
@@ -60,11 +60,9 @@ class Population():
         # Élitisme
         if(params.e>0):
             elit = self.pop[:params.e]
-            max_fit = elit[0].fitness()
         else:
             elit = []
-            max_fit = 0
-
+        self.fitsum = 0
         while n_desc<self.n-10:
             p1 = copy.copy(self.pick())
             p2 = copy.copy(self.pick())
@@ -74,15 +72,15 @@ class Population():
             p1.mutate(params.p_mut)
             p2.mutate(params.p_mut)
             n_desc += 2
-            max_fit = max(max_fit, p1.fitness(), p2.fitness())
             desc_pop.extend((p1, p2))
+            self.fitsum += p1.fitness() + p2.fitness()
         for i in range(10):
             p = self.IND()
-            max_fit = max(max_fit, p.fitness())
             desc_pop.append(p)
+            self.fitsum += p.fitness()
             n_desc += 1
         desc_pop.extend(elit)
         self.pop = sorted(desc_pop, key=lambda x: x.fitness(), reverse=True)
-        self.fitsum = sum(i.fitness() for i in self.pop)
         self.best = self.pop[0]
+        max_fit = self.best.fitness()
         return (max_fit, self.fitsum/n_desc)
