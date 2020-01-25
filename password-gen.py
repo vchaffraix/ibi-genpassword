@@ -14,6 +14,9 @@ import json
 def updateParams(p):
     params.GROUP_ID = p["GROUP_ID"]
     params.N = p["N"]
+    params.N_ENV2 = p["N_ENV2"]
+    params.FREQ_MIX = p["FREQ_MIX"]
+    params.MAXGEN = p["MAXGEN"]
     params.e = p["e"]
     params.p_cross = p["p_cross"]
     params.p_mut = p["p_mut"]
@@ -21,36 +24,62 @@ def updateParams(p):
     params.TOURNAMENT_SIZE = p["TOURNAMENT_SIZE"]
     params.TOURNAMENT_P = p["TOURNAMENT_P"]
     params.CROSS_FUNCTION = p["CROSS_FUNCTION"]
+def getParams():
+    return {
+        "GROUP_ID":params.GROUP_ID,
+        "N":params.N,
+        "N_ENV2":params.N_ENV2,
+        "FREQ_MIX":params.FREQ_MIX,
+        "MAXGEN":params.MAXGEN,
+        "e":params.e,
+        "p_cross":params.p_cross,
+        "p_mut":params.p_mut,
+        "SELECT_FUNCTION":params.SELECT_FUNCTION,
+        "TOURNAMENT_SIZE":params.TOURNAMENT_SIZE,
+        "TOURNAMENT_P":params.TOURNAMENT_P,
+        "CROSS_FUNCTION":params.CROSS_FUNCTION
+    }
+
 
 class Algo:
     def __init__(self):
         self.pop = Population(Password, params.N)
+        self.pop2 = Population(Password, params.N_ENV2)
         self.index = 0
         self.t = 0
         self.x_vals = [self.index]
         self.best_vals = [self.pop.best.fitness()]
         self.mean_vals = [self.pop.fitsum/params.N]
+        self.mean_vals2 = [self.pop2.fitsum/(params.N_ENV2)]
         self.done = False
     def step(self):
         self.index += 1
         self.x_vals.append(self.index)
         t_0 = time.time()
         out = self.pop.nextGen()
+        out2 = self.pop2.nextGen()
         self.t += time.time() - t_0
         self.best_vals.append(out[0])
         self.mean_vals.append(out[1])
+        self.mean_vals2.append(out2[1])
+        if(self.index%params.FREQ_MIX==0):
+            t_0 = time.time()
+            self.pop.merge(self.pop2)
+            self.pop2 = Population(Password, params.N_ENV2)
+            self.t += time.time() - t_0
         if(out[0]==1):
             self.done = True
     def results(self):
-        return {
+        res = {
             "group_id":params.GROUP_ID,
-            "password":alg.pop.best.password,
+            "password":alg.pop.best.password if self.done else "",
             "best_fitness":alg.best_vals,
             "average_fitness":alg.mean_vals,
             "time":alg.t,
-            "n_generations":alg.index
+            "n_generations":alg.index,
+            "found":self.done
         }
-
+        return res
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument("--benchmark", action="store_true", help="Enregistre les résults")
@@ -61,22 +90,27 @@ if __name__ == "__main__":
 
     if(args.benchmark):
         if(args.params is None):
-            n_test = 1
+            benchmark_params = [getParams()]
+            n_test = params.n_test
         else:
             benchmark_params = json.load(open(args.params, "r"))
-            n_test = len(benchmark_params)
+            n_test = 0
+            for t in benchmark_params:
+                n_test += t["n_test"]
         pbar = tqdm(total=params.MAXGEN*n_test)
-        for i in range(n_test):
+        for i in range(len(benchmark_params)):
             updateParams(benchmark_params[i])
-            alg = Algo()
-            while not(alg.done):
-                alg.step()
-                pbar.update(1)
-            pbar.update(params.MAXGEN - alg.index)
-            benchmarks.append(alg.results())
+            results_test = []
+            for j in range(benchmark_params[i]["n_test"]):
+                alg = Algo()
+                while not(alg.done) and alg.index<params.MAXGEN:
+                    alg.step()
+                    pbar.update(1)
+                pbar.total -= params.MAXGEN - alg.index
+                results_test.append(alg.results())
+            benchmarks.append({"params":benchmark_params[i], "results":results_test})
         f = open("results.json", "w")
         json.dump(benchmarks, f)
-
     else:
         plt.style.use("ggplot")
         alg = Algo()
@@ -99,7 +133,8 @@ if __name__ == "__main__":
                 # plt.legend(loc="upper left")
                 plt.plot(alg.x_vals, alg.best_vals, "crimson")
                 plt.plot(alg.x_vals, alg.mean_vals, "tab:purple")
-                plt.gca().legend(("Best fitness", "Average fitness"))
+                plt.plot(alg.x_vals, alg.mean_vals2, "tab:cyan", linestyle=':')
+                plt.gca().legend(("Best fitness", "Average fitness", "Average fitness (2nd population)"))
                 plt.gcf().suptitle("Évolution de la fitness au cours des générations", fontsize=12)
                 plt.xlabel("Génération")
                 plt.ylabel("Fitness")

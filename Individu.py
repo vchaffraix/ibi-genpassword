@@ -33,15 +33,18 @@ class Password(Individu):
         return self.fitness_val
     # Fonction de mutation d'un mot de passe
     def mutate(self, p):
-        for i, c in enumerate(self.password):
+        i=0
+        while i<len(self.password):
             tirage = random.random()
             if p>=tirage:
                 new_pass = self.password[:i] + random.choice(list(params.CHARS)+[""])
                 if random.random() < 0.5 and self.length<max(params.PASS_LENGTH):
                     new_pass += self.password[i:]
+                    i += 1
                 elif i<self.length-1:
                     new_pass += self.password[i+1:]
                 self.password = new_pass
+            i += 1
         self.length = len(self.password)
         self.fitness_val = check(params.GROUP_ID, self.password)
 

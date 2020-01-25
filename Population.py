@@ -52,6 +52,13 @@ class Population():
     def pick(self):
         return self.SELECT_FUNCTIONS[params.SELECT_FUNCTION](self)
 
+    def merge(self, pop2):
+        concat = self.pop + pop2.pop
+        e = self.pop[:params.e]
+        concat = random.sample(concat, self.n-params.e)
+        self.pop = sorted(e+concat, key=lambda x: x.fitness(), reverse=True)
+
+
     def nextGen(self):
         n_desc = 0
         desc_pop = []
