@@ -24,6 +24,7 @@ def updateParams(p):
     params.TOURNAMENT_SIZE = p["TOURNAMENT_SIZE"]
     params.TOURNAMENT_P = p["TOURNAMENT_P"]
     params.CROSS_FUNCTION = p["CROSS_FUNCTION"]
+    params.n_test = p["n_test"]
 def getParams():
     return {
         "GROUP_ID":params.GROUP_ID,
@@ -37,9 +38,9 @@ def getParams():
         "SELECT_FUNCTION":params.SELECT_FUNCTION,
         "TOURNAMENT_SIZE":params.TOURNAMENT_SIZE,
         "TOURNAMENT_P":params.TOURNAMENT_P,
-        "CROSS_FUNCTION":params.CROSS_FUNCTION
+        "CROSS_FUNCTION":params.CROSS_FUNCTION,
+        "n_test":params.n_test
     }
-
 
 class Algo:
     def __init__(self):
