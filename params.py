@@ -17,6 +17,3 @@ TOURNAMENT_P = 0.9
 # "slice" ou "merge"
 CROSS_FUNCTION = "slice"
 n_test=1
-
-# TODO
-# faire une micro-élite qui se reproduit à part et qui vient se greffer au bout de 100 générations
