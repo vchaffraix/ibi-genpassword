@@ -15,7 +15,7 @@ def updateParams(p):
     params.GROUP_ID = p["GROUP_ID"]
     params.N = p["N"]
     params.N_ENV2 = p["N_ENV2"]
-    params.FREQ_MIX = p["FREQ_MIX"]
+    params.MIX_THRESHOLD = p["MIX_THRESHOLD"]
     params.MAXGEN = p["MAXGEN"]
     params.e = p["e"]
     params.p_cross = p["p_cross"]
@@ -30,7 +30,7 @@ def getParams():
         "GROUP_ID":params.GROUP_ID,
         "N":params.N,
         "N_ENV2":params.N_ENV2,
-        "FREQ_MIX":params.FREQ_MIX,
+        "MIX_THRESHOLD":params.MIX_THRESHOLD,
         "MAXGEN":params.MAXGEN,
         "e":params.e,
         "p_cross":params.p_cross,
@@ -63,7 +63,7 @@ class Algo:
         self.best_vals.append(out[0])
         self.mean_vals.append(out[1])
         self.mean_vals2.append(out2[1])
-        if(self.index%params.FREQ_MIX==0):
+        if(out2[1]>=params.MIX_THRESHOLD):
             t_0 = time.time()
             self.pop.merge(self.pop2)
             self.pop2 = Population(Password, params.N_ENV2)

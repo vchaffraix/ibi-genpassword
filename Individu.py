@@ -37,7 +37,10 @@ class Password(Individu):
         while i<len(self.password):
             tirage = random.random()
             if p>=tirage:
-                new_pass = self.password[:i] + random.choice(list(params.CHARS)+[""])
+                empty_char = []
+                if(len(self.password)>min(params.PASS_LENGTH)):
+                    empty_char.append("")
+                new_pass = self.password[:i] + random.choice(list(params.CHARS)+empty_char)
                 if random.random() < 0.5 and self.length<max(params.PASS_LENGTH):
                     new_pass += self.password[i:]
                     i += 1
